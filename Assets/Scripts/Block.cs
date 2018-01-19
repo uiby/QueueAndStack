@@ -4,8 +4,12 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class Block : MonoBehaviour {
-    [SerializeField] BlockType blockType;
-    [SerializeField] int value;
+    [SerializeField, Range(1, 6)] int value = 1;
+    public int GetValue() {
+        return value;
+    }
+    public Owner owner{get; private set;}
+    public BlockState blockState{get; private set;}
     Text valueText;
     RectTransform rectTrans;
 
@@ -16,11 +20,19 @@ public class Block : MonoBehaviour {
 	void Start () {
         rectTrans = GetComponent<RectTransform>();
         valueText = GetComponentInChildren<Text>();
-        valueText.text = value.ToString();
         var size = GetComponent<RectTransform>().sizeDelta;
         width = size.x;
         height = size.y;
 	}
+
+    public void Initialize(Owner _owner) {
+        owner = _owner;
+        valueText.text = value.ToString();
+    }
+
+    public void ChangeState(BlockState state) {
+        blockState = state;
+    }
 
     public void MovePosition(Vector2 pos) {
         rectTrans.localPosition = pos;
@@ -28,6 +40,6 @@ public class Block : MonoBehaviour {
 
     public void TransParent(Transform parent) {
         transform.parent = null;
-        transform.SetParent(parent);
+        transform.parent = parent;
     }
 }

@@ -3,24 +3,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class BasePlayer : MonoBehaviour {
-    [SerializeField] bool isPlayer;
+    [SerializeField] Owner onwer;
     [SerializeField] HandArea handArea;
+    [SerializeField] SubmitArea submitArea;
     [SerializeField] List<Block> handBlocks; //手札
-    DataStruct dataStruct;
-    Queue<Block> queue = new Queue<Block>();
-    Stack<Block> stack = new Stack<Block>();
+    [SerializeField] DataStruct dataStruct;
     int remainSubmitCount = 1;
     int remainRecallCount = 1;
 
     public void Initialize() {
-        while (0 < queue.Count) {
-            handBlocks.Add(queue.Dequeue());
+        for (int n = 0; n < handBlocks.Count; n++) {
+            handBlocks[n].Initialize(onwer);
+            handBlocks[n].ChangeState(BlockState.HAND);
         }
-        while (0 < stack.Count) {
-            handBlocks.Add(stack.Pop());
-        }
-
+        //handBlocks.AddRange(submitArea.ReleaseAll());
         handArea.Initialize(handBlocks);
+        submitArea.Reset();
+        InitState();
     }
 
     public void Reset() {
@@ -35,43 +34,43 @@ public class BasePlayer : MonoBehaviour {
     public bool FinishTurn() {
         return remainSubmitCount == 0;
     }
-    public bool CanRecall() {
-        var submitedCardCount = 0;
-        if (IsQueue()) {
-            submitedCardCount = queue.Count;
-        }
-        else {
-            submitedCardCount = stack.Count;
-        }
-
-        return submitedCardCount != 0;
-    }
 
     //場に出す
-    protected void OnSubmit(Block n) {
+    protected void Submit(Block block) {
+        if (!submitArea.CanSubmit()) return;
+        if (remainSubmitCount == 0) return;
         remainSubmitCount--;
-        if (IsQueue()) {
-            queue.Enqueue(n);
-        }
-        else {
-            stack.Push(n);
-        }
-        handBlocks.Remove(n);
+        submitArea.Submit(block, dataStruct);
+
+        ChangeState(BlockState.SUBMIT, block.GetValue()); //
+
+        handArea.Refresh(handBlocks);
+        //handBlocks.Remove(n);
     }
 
     //場から回収
-    protected void OnRecall() {
+    protected void Recall() {
+        Debug.Log("RECALL");
+        if (!submitArea.CanRecall()) return;
+        if (remainRecallCount == 0) return;
         remainRecallCount--;
-        if (IsQueue()) {
-            handBlocks.Add(queue.Dequeue());
-        } 
-        else {
-            handBlocks.Add(stack.Pop());
+
+        var block = submitArea.Recall(dataStruct);
+        Debug.Log(block.GetValue());
+
+        ChangeState(BlockState.HAND, block.GetValue());
+        //handBlocks.Add(block);
+        handArea.AddToHand(handBlocks);
+        if (dataStruct == DataStruct.QUEUE)
+            submitArea.Refrash(dataStruct);
+    }
+
+    void ChangeState(BlockState changeState, int value) {
+        for (int n = 0; n < handBlocks.Count; n++) {
+            if (handBlocks[n].GetValue() == value) {
+                handBlocks[n].ChangeState(changeState);
+                return;
+            }
         }
     }
-
-    bool IsQueue() {
-        return dataStruct == DataStruct.QUEUE;
-    }
-
 }

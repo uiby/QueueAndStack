@@ -3,7 +3,12 @@
     STACK,
 }
 
-public enum BlockType {
+public enum Owner {
     PLAYER,
     COM,
+}
+
+public enum BlockState {
+    HAND,
+    SUBMIT,
 }

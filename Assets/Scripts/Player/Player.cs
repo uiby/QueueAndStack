@@ -4,13 +4,12 @@ using UnityEngine;
 
 public class Player : BasePlayer {
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    public void OnSubmit(Block block) {
+        if (block.owner == Owner.PLAYER && block.blockState == BlockState.HAND)
+            Submit(block);
+    }
+
+    public void OnRecall() {
+        Recall();
+    }
 }
