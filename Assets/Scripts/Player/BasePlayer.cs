@@ -47,6 +47,10 @@ public class BasePlayer : MonoBehaviour {
         return submitArea.GetList(dataStruct);
     }
 
+    public void WinBattle(int n) {
+        submitArea.ShowCrown(n);
+    }
+
     //---プレイヤーの行動---//
     public void DecideDataStruct(DataStruct _dataStruct) {
         dataStruct = _dataStruct;

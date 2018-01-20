@@ -89,8 +89,24 @@ public class GameSystem : MonoBehaviour {
     }
 
     IEnumerator ShowResult(List<Block> playerBlocks, List<Block> comBlocks) {
-        for (int n = 0; n < playerBlocks.Count; n++) {
-            Debug.Log(playerBlocks[n].GetValue()+":"+comBlocks[n].GetValue());
+        var playerWinCount = 0;
+        var comWinCount = 0;
+        var battleCount = playerBlocks.Count;
+        for (int n = 0; n < battleCount; n++) {
+            var playerValue = playerBlocks[n].GetValue();
+            var comValue = comBlocks[n].GetValue();
+
+            if ((playerValue == 1 && comValue == 6) || (playerValue > comValue)) { //playerの勝利
+                playerWinCount++;
+                player.WinBattle(n);
+                comBlocks[n].Lose();
+            } else if ((comValue == 1 && playerValue == 6) || (comValue > playerValue)) { //comの勝利
+                comWinCount++;
+                com.WinBattle(n);
+                playerBlocks[n].Lose();
+            }
+
+            yield return new WaitForSeconds(0.3f);
         }
 
         yield return null;

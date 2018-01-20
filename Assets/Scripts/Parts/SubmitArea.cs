@@ -1,18 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Linq;
 
 public class SubmitArea : MonoBehaviour {
     [SerializeField, Range(5, 6)] int maxBlockCount = 6;
+    [SerializeField] List<Image> crownList;
     int nowBlockCount = 0;
     Queue<Block> queue = new Queue<Block>();
     Stack<Block> stack = new Stack<Block>();
 
+    //セット単位のリセット
     public void Reset() {
         queue = new Queue<Block>();
         stack = new Stack<Block>();
         nowBlockCount = 0;
+        for (int n = 0; n < crownList.Count; n++)
+            crownList[n].enabled = false;
     }
 
     public void Submit(Block block, DataStruct dataStruct) {
@@ -75,5 +80,9 @@ public class SubmitArea : MonoBehaviour {
         var stackList = stack.ToList();
         stackList.Reverse();
         return stackList;
+    }
+
+    public void ShowCrown(int n) {
+        crownList[n].enabled = true;
     }
 }
