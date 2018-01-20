@@ -19,7 +19,7 @@ public class GameSystem : MonoBehaviour {
         setLoser = Owner.PLAYER; //最初はプレイヤーが選べる
 		player.Initialize();
         com.Initialize();
-        resultCanvas.Init();
+        resultCanvas.Initialize();
         setCount = 1; //1セット目から
 
         StartCoroutine(GameLoop());
@@ -91,11 +91,14 @@ public class GameSystem : MonoBehaviour {
 
         //if 2勝した場合、ゲーム終了
         if (player.winCount == 2) {
-            ;
+            resultCanvas.ShowGameResult("YOU WIN!");
+            yield break;
         } else if (com.winCount == 2) {
-            ;
+            resultCanvas.ShowGameResult("YOU LOSE...");
+            yield break;
         } else if (setCount == 3) {
-
+            resultCanvas.ShowGameResult("NICE GAME!");
+            yield break;
         }
 
         setCount++;
