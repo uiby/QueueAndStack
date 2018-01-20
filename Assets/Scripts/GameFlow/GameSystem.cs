@@ -97,7 +97,7 @@ public class GameSystem : MonoBehaviour {
             resultCanvas.ShowGameResult("YOU LOSE...");
             yield break;
         } else if (setCount == 3) {
-            resultCanvas.ShowGameResult("NICE GAME!");
+            resultCanvas.ShowGameResult("DRAW");
             yield break;
         }
 
