@@ -7,6 +7,7 @@ using System.Linq;
 public class SubmitArea : MonoBehaviour {
     [SerializeField, Range(5, 6)] int maxBlockCount = 6;
     [SerializeField] List<Image> crownList;
+    [SerializeField] Text label;
     int nowBlockCount = 0;
     Queue<Block> queue = new Queue<Block>();
     Stack<Block> stack = new Stack<Block>();
@@ -16,8 +17,15 @@ public class SubmitArea : MonoBehaviour {
         queue = new Queue<Block>();
         stack = new Stack<Block>();
         nowBlockCount = 0;
+        label.text = "";
         for (int n = 0; n < crownList.Count; n++)
             crownList[n].enabled = false;
+    }
+
+    public void SetLabel(DataStruct dataStruct) {
+        if (dataStruct == DataStruct.STACK)
+            label.text = "Stack";
+        else label.text = "Queue";
     }
 
     public void Submit(Block block, DataStruct dataStruct) {
