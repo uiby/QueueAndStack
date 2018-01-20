@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class Block : GuiParts {
     [SerializeField, Range(1, 6)] int value = 1;
+    Color initColor;
     public int GetValue() {
         return value;
     }
@@ -15,6 +16,7 @@ public class Block : GuiParts {
     protected override void Awake() {
         base.Awake();        
         valueText = GetComponentInChildren<Text>();
+        initColor = GetComponent<Image>().color;
     }
 
     public void Initialize(Owner _owner) {

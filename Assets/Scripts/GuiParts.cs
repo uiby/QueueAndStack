@@ -7,18 +7,19 @@ public class GuiParts : MonoBehaviour {
     [HideInInspector] public float width{get; private set;}
     [HideInInspector] public float height{get; private set;}
     RectTransform rectTrans;
-    protected Color initColor;
 
     protected virtual void Awake () {
         rectTrans = GetComponent<RectTransform>();
         var size = GetComponent<RectTransform>().sizeDelta;
         width = size.x;
         height = size.y;
-        initColor = GetComponent<Image>().color;
     }
 
     public void MovePosition(Vector2 pos, float duration) {
         StartCoroutine(Move(pos, duration));
+    }
+    public void MovePositionInTheMoment(Vector2 pos) {
+        rectTrans.localPosition = pos;
     }
 
     public void TransParent(Transform parent) {

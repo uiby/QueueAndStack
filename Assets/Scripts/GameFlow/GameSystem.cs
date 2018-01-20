@@ -5,6 +5,7 @@ using UnityEngine;
 public class GameSystem : MonoBehaviour {
     [SerializeField] SelectSubmitMethod selectSubmitCanvas;
     [SerializeField] ResultCanvas resultCanvas;
+    [SerializeField] TurnText turnText;
     [SerializeField] Player player;
     [SerializeField] Com com;
 
@@ -54,6 +55,7 @@ public class GameSystem : MonoBehaviour {
         //各プレイヤーの情報のリセット
         player.Reset();
         com.Reset();
+        selectSubmitCanvas.Reset();
         yield return null;
 
         selectSubmitCanvas.Show(selecter, setCount);
@@ -73,6 +75,8 @@ public class GameSystem : MonoBehaviour {
           //先行ターン
           //後行ターン
         while (turnCount < 16) {
+            turnText.UpdateTurn(turnCount/2 + 1);
+            turnText.ChagnePosition(playerTurn);
             Debug.Log("turn:"+turnCount+" player:"+ playerTurn);
             if (playerTurn == Owner.PLAYER) {
                 player.InitState();
@@ -86,18 +90,22 @@ public class GameSystem : MonoBehaviour {
             playerTurn = playerTurn == Owner.PLAYER ? Owner.COM : Owner.PLAYER;
         }
 
-        Debug.Log("finish turn");
+        turnText.FinishTurn();
         //勝敗
+        yield return new WaitForSeconds(1f);
         yield return StartCoroutine(ShowResult(player.GetSubmitBlocks(), com.GetSubmitBlocks()));
 
         //if 2勝した場合、ゲーム終了
         if (player.winCount == 2) {
+            yield return new WaitForSeconds(2f);
             resultCanvas.ShowGameResult("YOU WIN!");
             yield break;
         } else if (com.winCount == 2) {
+            yield return new WaitForSeconds(2f);
             resultCanvas.ShowGameResult("YOU LOSE...");
             yield break;
         } else if (setCount == 3) {
+            yield return new WaitForSeconds(2f);
             resultCanvas.ShowGameResult("DRAW");
             yield break;
         }

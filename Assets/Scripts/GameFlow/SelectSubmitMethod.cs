@@ -27,7 +27,10 @@ public class SelectSubmitMethod : MonoBehaviour {
     public void Hide() {
         for (int n = 0; n < fixChildren.Length; n++)
             fixChildren[n].gameObject.SetActive(false);
-        background.enabled = false;
+        var startColor = background.color;
+        var endColor = startColor;
+        endColor.a = 0f;
+        StartCoroutine(Fade(startColor, endColor, 0.4f));
     }
 
     public void Show(Owner selecter, int setCount) {
@@ -37,7 +40,10 @@ public class SelectSubmitMethod : MonoBehaviour {
         selectText.text = selecter == Owner.PLAYER ? "YOU SELECT" : "COM SELECT";
         for (int n = 0; n < fixChildren.Length; n++)
             fixChildren[n].gameObject.SetActive(true);
-        background.enabled = true;
+        var startColor = background.color;
+        var endColor = startColor;
+        endColor.a = 0.7f;
+        StartCoroutine(Fade(startColor, endColor, 0.3f));
     }
 
     //dataStruct 0:QUEUE, 1:STACK
@@ -53,5 +59,18 @@ public class SelectSubmitMethod : MonoBehaviour {
 
         queueButton.MovePosition(playerData == DataStruct.QUEUE ? playerPos : comPos, 0.2f);
         stackButton.MovePosition(playerData == DataStruct.STACK ? playerPos : comPos, 0.2f);
+    }
+
+    IEnumerator Fade(Color startColor, Color endColor, float duration) {
+        var timer = 0f;
+        var rate = 0f;
+
+        while (rate < 1) {
+            timer += Time.deltaTime;
+            rate = Mathf.Clamp(timer/duration, 0f, 1f);
+
+            background.color = Color.Lerp(startColor, endColor, rate);
+            yield return null;
+        }
     }
 }
