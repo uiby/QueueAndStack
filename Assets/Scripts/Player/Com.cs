@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 
 public class Com : BasePlayer {
+    [SerializeField] GameSystem gameSystem;
     Block submitBlock;
     bool canSubmit;
 
@@ -14,6 +15,11 @@ public class Com : BasePlayer {
             yield return false;
         yield return new WaitForSeconds(1f);
         Action();
+    }
+
+    public IEnumerator SelectDataStruct() {
+        yield return new WaitForSeconds(2f);
+        gameSystem.SelectSubmitMethod((DataStruct)Random.Range(0, 1));
     }
 
     IEnumerator Think() {
