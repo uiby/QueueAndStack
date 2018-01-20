@@ -28,6 +28,8 @@ public class Block : MonoBehaviour {
     public void Initialize(Owner _owner) {
         owner = _owner;
         valueText.text = value.ToString();
+        if (value == 6)
+            valueText.text = "Joker";
     }
 
     public void ChangeState(BlockState state) {
@@ -39,7 +41,7 @@ public class Block : MonoBehaviour {
     }
 
     public void TransParent(Transform parent) {
-        transform.parent = null;
-        transform.parent = parent;
+        //transform.parent = this.transform.parent;
+        transform.SetParent(parent);
     }
 }

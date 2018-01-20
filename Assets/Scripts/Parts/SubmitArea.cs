@@ -66,15 +66,4 @@ public class SubmitArea : MonoBehaviour {
     bool IsQueue(DataStruct data) {
         return data == DataStruct.QUEUE;
     }
-
-    public List<Block> ReleaseAll() {
-        var blocks = new List<Block>();
-        while (0 < queue.Count) {
-            blocks.Add(queue.Dequeue());
-        }
-        while (0 < stack.Count) {
-            blocks.Add(stack.Pop());
-        }
-        return blocks;
-    }
 }

@@ -9,7 +9,7 @@ public class HandArea : MonoBehaviour {
         if (blockList.Count == 0) return;
         var x = blockList[0].width;
         var y = blockList[0].height;
-        var pos = new Vector2(0, -100f);
+        var pos = new Vector2(0, -130f);
         for (int n = 0; n < blockList.Count; n++) {
             if (blockList[n].blockState != BlockState.HAND) continue;
             blockList[n].ChangeState(BlockState.HAND);
