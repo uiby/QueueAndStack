@@ -8,15 +8,15 @@ public class GameSystem : MonoBehaviour {
     [SerializeField] Player player;
     [SerializeField] Com com;
 
-    Owner setLoser;
+    public Owner selecter {get; private set;}
     Owner playerTurn;
-    bool selected;
+    public bool selected {get; private set;}
     int  turnCount;
     int setCount;
 
 	// Use this for initialization
 	void Start () {
-        setLoser = Owner.PLAYER; //最初はプレイヤーが選べる
+        selecter = Owner.PLAYER; //最初はプレイヤーが選べる
 		player.Initialize();
         com.Initialize();
         resultCanvas.Initialize();
@@ -33,7 +33,7 @@ public class GameSystem : MonoBehaviour {
     public void SelectSubmitMethod(DataStruct dataStruct) {
         var opData = dataStruct == DataStruct.QUEUE ? DataStruct.STACK : DataStruct.QUEUE;
         //データ構造の決定
-        if (setLoser == Owner.PLAYER) {
+        if (selecter == Owner.PLAYER) {
             player.DecideDataStruct(dataStruct);
             com.DecideDataStruct(opData);
         } else {
@@ -41,6 +41,7 @@ public class GameSystem : MonoBehaviour {
             player.DecideDataStruct(opData);
         }
         selected = true;
+        selectSubmitCanvas.MoveButtonParts(player.dataStruct);
     }
 
     void DeceideFirstTurnPlayer() {
@@ -55,8 +56,8 @@ public class GameSystem : MonoBehaviour {
         com.Reset();
         yield return null;
 
-        selectSubmitCanvas.Show(setLoser, setCount);
-        if (setLoser == Owner.COM) StartCoroutine(com.SelectDataStruct()); //COMの場合
+        selectSubmitCanvas.Show(selecter, setCount);
+        if (selecter == Owner.COM) StartCoroutine(com.SelectDataStruct()); //COMの場合
         //データ構造の決定
         while (selected == false) {
             yield return null;
@@ -109,19 +110,19 @@ public class GameSystem : MonoBehaviour {
     IEnumerator ShowResult(List<Block> playerBlocks, List<Block> comBlocks) {
         var playerWinCount = 0;
         var comWinCount = 0;
-        var battleCount = playerBlocks.Count;
+        var battleCount = 6;
         for (int n = 0; n < battleCount; n++) {
-            var playerValue = playerBlocks[n].GetValue();
-            var comValue = comBlocks[n].GetValue();
+            var playerValue = n < playerBlocks.Count ? playerBlocks[n].GetValue() : 0;
+            var comValue = n < comBlocks.Count ? comBlocks[n].GetValue() : 0;
 
             if ((playerValue == 1 && comValue == 6) || (playerValue > comValue)) { //playerの勝利
                 playerWinCount++;
                 player.WinBattle(n);
-                comBlocks[n].Lose();
+                if (n < comBlocks.Count) comBlocks[n].Lose();
             } else if ((comValue == 1 && playerValue == 6) || (comValue > playerValue)) { //comの勝利
                 comWinCount++;
                 com.WinBattle(n);
-                playerBlocks[n].Lose();
+                if (n < playerBlocks.Count) playerBlocks[n].Lose();
             }
 
             yield return new WaitForSeconds(0.5f);
@@ -134,15 +135,15 @@ public class GameSystem : MonoBehaviour {
             resultCanvas.ShowCrown(Owner.PLAYER, player.winCount);
             resultCanvas.ShowResultText("YOU WIN!");
             player.Win();
-            setLoser = Owner.COM; //次の選択権
+            selecter = Owner.COM; //次の選択権
         } else if (comWinCount > playerWinCount) {
             resultCanvas.ShowCrown(Owner.COM, com.winCount);
             resultCanvas.ShowResultText("COM WIN!");
             com.Win();
-            setLoser = Owner.PLAYER; //次の選択権
+            selecter = Owner.PLAYER; //次の選択権
         } else {
             resultCanvas.ShowResultText("DRAW");
-            setLoser = (Owner)Random.Range(0, 1); //引き分けの場合、ランダム
+            selecter = (Owner)Random.Range(0, 1); //引き分けの場合、ランダム
         }
     }
 }

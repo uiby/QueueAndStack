@@ -54,7 +54,6 @@ public class BasePlayer : MonoBehaviour {
     //---プレイヤーの行動---//
     public void DecideDataStruct(DataStruct _dataStruct) {
         dataStruct = _dataStruct;
-        submitArea.SetLabel(dataStruct);
     }
 
     public IEnumerator TurnLoop() {

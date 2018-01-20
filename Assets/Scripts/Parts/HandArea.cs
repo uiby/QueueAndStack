@@ -14,7 +14,7 @@ public class HandArea : MonoBehaviour {
             if (blockList[n].blockState != BlockState.HAND) continue;
             blockList[n].ChangeState(BlockState.HAND);
             blockList[n].TransParent(transform);
-            blockList[n].MovePosition(pos);
+            blockList[n].MovePosition(pos, 0.3f);
             pos.y += y + 10;
         }
     }
