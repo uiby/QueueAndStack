@@ -81,10 +81,18 @@ public class GameSystem : MonoBehaviour {
 
         Debug.Log("finish turn");
         //勝敗
+        yield return StartCoroutine(ShowResult(player.GetSubmitBlocks(), com.GetSubmitBlocks()));
 
         //if 2勝した場合、ゲーム終了
 
         //else 負けた方が先行後行選べる
     }
 
+    IEnumerator ShowResult(List<Block> playerBlocks, List<Block> comBlocks) {
+        for (int n = 0; n < playerBlocks.Count; n++) {
+            Debug.Log(playerBlocks[n].GetValue()+":"+comBlocks[n].GetValue());
+        }
+
+        yield return null;
+    }
 }

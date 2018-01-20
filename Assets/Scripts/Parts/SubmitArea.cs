@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class SubmitArea : MonoBehaviour {
     [SerializeField, Range(5, 6)] int maxBlockCount = 6;
@@ -65,5 +66,14 @@ public class SubmitArea : MonoBehaviour {
 
     bool IsQueue(DataStruct data) {
         return data == DataStruct.QUEUE;
+    }
+
+    public List<Block> GetList(DataStruct dataStruct) {
+        if (dataStruct == DataStruct.QUEUE) {
+            return queue.ToList();
+        }
+        var stackList = stack.ToList();
+        stackList.Reverse();
+        return stackList;
     }
 }

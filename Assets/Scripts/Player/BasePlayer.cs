@@ -43,6 +43,10 @@ public class BasePlayer : MonoBehaviour {
         winCount++;
     }
 
+    public List<Block> GetSubmitBlocks() {
+        return submitArea.GetList(dataStruct);
+    }
+
     //---プレイヤーの行動---//
     public void DecideDataStruct(DataStruct _dataStruct) {
         dataStruct = _dataStruct;
@@ -97,4 +101,5 @@ public class BasePlayer : MonoBehaviour {
             }
         }
     }
+
 }
