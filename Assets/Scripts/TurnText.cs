@@ -26,7 +26,7 @@ public class TurnText : GuiParts {
     }
 
     public void FinishTurn() {
-        text.text = "result";
+        text.text = "RESULT";
         MovePosition(new Vector2(0, -200), 0.3f);
     }
 }

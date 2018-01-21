@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BasePlayer : MonoBehaviour {
@@ -10,11 +11,14 @@ public class BasePlayer : MonoBehaviour {
     public DataStruct dataStruct{get; private set;}
     int remainSubmitCount = 0;
     int remainRecallCount = 0;
+    public int recallCount{get; private set;}
     public int winCount{get; private set;} //勝利数
 
+    //ゲーム単位のリセット
     public void Initialize() {
         Reset();
         winCount = 0;
+        recallCount = 0;
     }
 
     //セット単位のリセット
@@ -45,6 +49,14 @@ public class BasePlayer : MonoBehaviour {
 
     public List<Block> GetSubmitBlocks() {
         return submitArea.GetList(dataStruct);
+    }
+
+    public List<Block> GetMyHandBlocks() {
+        return handBlocks.Where(item => item.blockState == BlockState.HAND).ToList();
+    }
+
+    public List<int> GetValueByBlocksList(List<Block> blockList) {
+        return blockList.Select(item => item.GetValue()).ToList();
     }
 
     public void WinBattle(int n) {
@@ -81,6 +93,7 @@ public class BasePlayer : MonoBehaviour {
         if (!submitArea.CanRecall()) return;
         if (remainRecallCount == 0 || remainSubmitCount == 0) return;
         Debug.Log("RECALL");
+        recallCount++;
         remainRecallCount--;
 
         var block = submitArea.Recall(dataStruct);
