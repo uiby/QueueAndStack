@@ -4,17 +4,26 @@ using System.Linq;
 using UnityEngine;
 
 public class Com : BasePlayer {
+    [SerializeField] TurnText turnText; //ターン数を見るために使用
     [SerializeField] GameSystem gameSystem;
     [SerializeField] Player player; //プレイヤーの情報
     Block submitBlock;
     bool canSubmit;
 
-    public IEnumerator TurnAction() {
-        yield return StartCoroutine(Think());
+    List<int> myHandList;
+    List<int> mySubmitList;
+    List<int> opHandList;
+    List<int> opSubmitList;
 
-        if (!canSubmit)
-            yield return false;
-        yield return new WaitForSeconds(1f);
+    public IEnumerator TurnAction() {
+        yield return new WaitForSeconds(Random.Range(0.4f, 0.8f));
+        yield return StartCoroutine(Think());
+        yield return new WaitForSeconds(Random.Range(0.4f, 0.8f));
+
+        if (!canSubmit) {
+            ForceFinish();
+            yield break;
+        }
         Action();
     }
 
@@ -30,29 +39,29 @@ public class Com : BasePlayer {
         //敵の手札を把握
         var opHandBlocks = player.GetMyHandBlocks();
         yield return null;
-        if (myHandBlocks.Count == 0) { //強制終了
-            ForceFinish();
+        if (myHandBlocks.Count == 0 && recallCount >= 2) { //手札がないand取り出しできない場合、強制終了
             canSubmit = false;
             yield break;
+        } else if (myHandBlocks.Count == 0 && recallCount < 2) {
+            Recall();
+            myHandBlocks = GetMyHandBlocks();
         }
 
         var index = 0;
 
-        //自分の手札を場を把握
-        var myHandValue = GetValueByBlocksList(myHandBlocks);
-        var mySubmitValue = GetValueByBlocksList(GetSubmitBlocks());
-        //敵の手札を場を把握
-        var opHandValue = GetValueByBlocksList(opHandBlocks);
-        var opSubmitValue = GetValueByBlocksList(player.GetSubmitBlocks());
+        //自分の手札と場を把握
+        UpdateMyInfo();
+        //敵の手札と場を把握
+        opHandList = GetValueByBlocksList(opHandBlocks);
+        opSubmitList = GetValueByBlocksList(player.GetSubmitBlocks());
 
         if (dataStruct == DataStruct.STACK) {
-            var result = CaptureQueue(mySubmitValue, opSubmitValue, myHandValue, opHandValue, recallCount);
+            var result = CaptureQueue(mySubmitList, opSubmitList, myHandList, opHandList);
             index = myHandBlocks.FindIndex(item => item.GetValue() == result);
         } else {
-            //ランダムに提出
-            index = Random.Range(0, myHandBlocks.Count);
+            var result = CaptureStack(mySubmitList, opSubmitList, myHandList, opHandList);
+            index = myHandBlocks.FindIndex(item => item.GetValue() == result);
         }
-
 
         submitBlock = myHandBlocks[index];
     }
@@ -67,31 +76,106 @@ public class Com : BasePlayer {
     //お互いの手札
     //お互いの残り取り出し回数
     //
-    int CaptureQueue(List<int> mySubmitList, List<int> opSubmitList, List<int> myHandList, List<int> opHandList, int myRecallCount) {
+    int CaptureQueue(List<int> _mySubmitList, List<int> _opSubmitList, List<int> _myHandList, List<int> _opHandList) {
         var result = 0;
+        var nowTurnCount = turnText.turnCount;
         //場の積み上げ数を比較する
-        var submitedBlocksMany = mySubmitList.Count >= opSubmitList.Count ? Owner.COM : Owner.PLAYER; //積み上げ数が自分の方が多いならCOM
+        var compSubmitedBlocks = _mySubmitList.Count - _opSubmitList.Count; //積み上げ数 = 自分 - 相手
 
-        if (submitedBlocksMany == Owner.COM) { //自分の方が積みあがってる場合: 常に相手の手札の最大コストに勝てる自分の最小コストをだす
-            var opHandMax = opHandList.Max();
-            myHandList.Sort(); //昇順(後半ほど大きい)にソート
-            if (myHandList.Exists(value => value > opHandMax)) {                
-                result = myHandList.Find(value => value > opHandMax);
+        if (compSubmitedBlocks > 0) { //自分の方が積みあがってる場合: 常に相手の手札の最大コストに勝てる自分の最小コストをだす
+            var opHandMax = _opHandList.Max();
+            _myHandList.Sort(); //昇順(後半ほど大きい)にソート
+            if (_myHandList.Exists(value => value > opHandMax)) {
+                result = _myHandList.Find(value => value > opHandMax);
             } else {
-                result = myHandList.Min(); //敵に勝てない場合、最小値を積む
+                result = _myHandList.Min(); //敵に勝てない場合、最小値を積む
             }
-        } else { //敵の方が積みあがってる場合: 
-            var nextSubmitNumber = mySubmitList.Count;
-            var opValue = opSubmitList[nextSubmitNumber];
-            myHandList.Sort(); //昇順(後半ほど大きい)にソート
-            if (myHandList.Exists(value => value > opValue)) { //場に勝てるカードがある場合
-                result = myHandList.Find(value => value > opValue);
+        } else if (compSubmitedBlocks < 0) { //敵の方が積みあがってる場合: 
+            var nextSubmitNumber = _mySubmitList.Count;
+            var opValue = _opSubmitList[nextSubmitNumber];
+            _myHandList.Sort(); //昇順(後半ほど大きい)にソート
+            if (_myHandList.Exists(value => value > opValue)) { //場に勝てるカードがある場合
+                result = _myHandList.Find(value => value > opValue);
             } else { //勝てない場合
-                result = myHandList.Min(); //敵に勝てない場合、最小値を積む
+                result = _myHandList.Min(); //敵に勝てない場合、最小値を積む
+            }
+        } else {
+            var nowWinCount = GetWinCount(_mySubmitList, _opSubmitList); //場の状況をみる
+            if (nowWinCount > 0) {
+                result = _myHandList[Random.Range(0, _myHandList.Count - 1)];
+            } else if (nowTurnCount >= 5 && CanRecall() && recallCount < 2) {
+                Recall();
+                UpdateMyInfo();
+                result = CaptureQueue(mySubmitList, _opSubmitList, myHandList, _opHandList);
+            } else {
+                result = _myHandList[Random.Range(0, _myHandList.Count - 1)];
+            }
+
+        }
+
+        return result;
+    }
+
+    //敵がスタックだった場合の攻略方法 (自分はキュー)
+    //必須条件　自分の手札がある
+    int CaptureStack(List<int> _mySubmitList, List<int> _opSubmitList, List<int> _myHandList, List<int> _opHandList) {
+        var result = 0;
+        var nowTurnCount = turnText.turnCount;
+        //場の積み上げ数を比較する
+        var submitedBlocksMany = _mySubmitList.Count >= _opSubmitList.Count ? Owner.COM : Owner.PLAYER; //積み上げ数が自分の方が多いならCOM
+
+        if (submitedBlocksMany == Owner.COM) { //自分の方が積みあがってる場合: 場の状況を見て相手の方が強い場合は取り出す
+            var opHandMax = _opHandList.Max(); //相手の手札の最大と算出
+            _myHandList.Sort(); //昇順(後半ほど大きい)にソート
+            var nowWinCount = GetWinCount(_mySubmitList, _opSubmitList); //場の状況をみる
+            if (nowWinCount > 0) {
+                if (_myHandList.Exists(value => value > opHandMax)) {
+                    result = _myHandList.Find(value => value > opHandMax);
+                } else {
+                    result = _myHandList.Min(); //敵に勝てない場合、最小値を積む
+                }
+            } else if (nowTurnCount >= 5 && CanRecall() && recallCount < 2) {
+                Recall();
+                UpdateMyInfo();
+                result = CaptureStack(mySubmitList, _opSubmitList, myHandList, _opHandList);
+            } else {
+                result = _myHandList.Min(); //敵に勝てない場合、最小値を積む
+            }
+        } else { //敵の方が積みあがってる場合:
+            var nextSubmitNumber = _mySubmitList.Count;
+            var opValue = _opSubmitList[nextSubmitNumber];
+            _myHandList.Sort(); //昇順(後半ほど大きい)にソート
+            if (_myHandList.Exists(value => value > opValue)) { //場に勝てるカードがある場合
+                result = _myHandList.Find(value => value > opValue);
+            } else { //勝てない場合
+                result = _myHandList.Min(); //敵に勝てない場合、最小値を積む
             }
         }
 
-        Debug.Log("submit:"+ result);
         return result;
+    }
+
+    int GetWinCount(List<int> mySubmitList, List<int> opSubmitList) {
+        var myWinCount = 0;
+        var opWinCount = 0;
+        var battleCount = 6;
+        for (int n = 0; n < battleCount; n++) {
+            var myValue = n < mySubmitList.Count ? mySubmitList[n] : 0;
+            var opValue = n < opSubmitList.Count ? opSubmitList[n] : 0;
+
+            if ((myValue == 1 && opValue == 6) || (myValue > opValue)) { //myの勝利
+                myWinCount++;
+            } else if ((opValue == 1 && myValue == 6) || (opValue > myValue)) { //opの勝利
+                opWinCount++;
+            }
+        }
+
+        return myWinCount - opWinCount;
+    }
+
+    //自分の手札と場の状況を更新する
+    void UpdateMyInfo() {
+        myHandList = GetValueByBlocksList(GetMyHandBlocks());
+        mySubmitList = GetValueByBlocksList(GetSubmitBlocks());
     }
 }

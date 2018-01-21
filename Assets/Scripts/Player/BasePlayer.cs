@@ -18,7 +18,6 @@ public class BasePlayer : MonoBehaviour {
     public void Initialize() {
         Reset();
         winCount = 0;
-        recallCount = 0;
     }
 
     //セット単位のリセット
@@ -31,6 +30,7 @@ public class BasePlayer : MonoBehaviour {
         submitArea.Reset();
         remainSubmitCount = 0;
         remainRecallCount = 0;
+        recallCount = 0;
     }
 
     //ターン単位のリセット
@@ -79,31 +79,33 @@ public class BasePlayer : MonoBehaviour {
     protected void Submit(Block block) {
         if (!submitArea.CanSubmit()) return;
         if (remainSubmitCount == 0) return;
+        Debug.Log(onwer+" : SUBMIT "+block.GetValue());
         remainSubmitCount--;
         submitArea.Submit(block, dataStruct);
 
         ChangeState(BlockState.SUBMIT, block.GetValue()); //
 
         handArea.Refresh(handBlocks);
-        //handBlocks.Remove(n);
     }
 
     //場から回収
     protected void Recall() {
         if (!submitArea.CanRecall()) return;
         if (remainRecallCount == 0 || remainSubmitCount == 0) return;
-        Debug.Log("RECALL");
         recallCount++;
         remainRecallCount--;
 
         var block = submitArea.Recall(dataStruct);
-        Debug.Log(block.GetValue());
+        Debug.Log(onwer+" : RECALL "+ block.GetValue());
 
         ChangeState(BlockState.HAND, block.GetValue());
-        //handBlocks.Add(block);
         handArea.AddToHand(handBlocks);
         if (dataStruct == DataStruct.QUEUE)
             submitArea.Refrash(dataStruct);
+    }
+
+    protected bool CanRecall() {
+        return submitArea.CanRecall() && (remainRecallCount > 0 && remainSubmitCount > 0);
     }
 
     protected void ForceFinish() {

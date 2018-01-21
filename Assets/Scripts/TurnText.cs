@@ -4,11 +4,13 @@ using UnityEngine.UI;
 using UnityEngine;
 
 public class TurnText : GuiParts {
+    public int turnCount{get; private set;}
     Text text;
     Color initColor;
 
     protected override void Awake() {
         base.Awake();
+        turnCount = 0;
         text = GetComponentInChildren<Text>();
         text.text = "";
         initColor = GetComponent<Text>().color;
@@ -22,6 +24,7 @@ public class TurnText : GuiParts {
     }
 
     public void UpdateTurn(int turn) {
+        turnCount = turn;
         text.text = turn < 8 ? turn+" TURN" : "LAST TURN";
     }
 
